@@ -78,7 +78,7 @@ const MAP_CONFIG = {
   lede:
     "Bedroom count sets the baseline; location decides whether a home beats it. Every comparison here is within the same size: <strong>1.00× = what a typical Bend home that size earns</strong>. The location effect runs through <strong>distance to the walkable core</strong>: the nearer of downtown (Wall Street) and the Old Mill District, where guests walk to dinner, the river and concerts.",
   marketInterpretation:
-    "<strong>Tick one bedroom size</strong> in the bottom-left panel to see where that size earns. Green = top quarter for its size, grey = bottom quarter; bigger dots = more bedrooms. Click an area outline for its numbers by size. The seven areas are clusters of listing coordinates, used as reference geography only.",
+    "In the bottom-left panel (tap “show” on a phone), <strong>untick all but one bedroom size</strong> to see where that size earns. Green = top quarter for its size, gold = middle half, grey = bottom quarter; bigger dots = more bedrooms. Click an area outline for its numbers by size. The seven areas are clusters of listing coordinates, used as reference geography only.",
 };
 
 const LOC_READS = {
@@ -86,7 +86,7 @@ const LOC_READS = {
   "2BR": "Revenue falls with every kilometre from the core.",
   "3BR": "Walkable pays most; the edge of town is weakest.",
   "4BR+": "Two ways to win: walkable, or a large home on a bigger lot out of town. The 2–4 km middle is weakest and fills fewer nights.",
-  "All sizes": "Size-adjusted, so this row isn't just the bigger houses talking.",
+  "All sizes": "The × figures are size-adjusted; the dollar figures still mix sizes.",
 };
 
 const AREA_GRID_NOTE = () => {
@@ -149,7 +149,7 @@ const MARKET_OVERVIEW = {
   heroImage: photo(
     "overview/bend-from-pilot-butte.jpg",
     "Downtown Bend seen from Pilot Butte, with snow-capped Mt. Bachelor, Broken Top and the Three Sisters on the horizon",
-    "Bend from Pilot Butte, with Mt. Bachelor and the Three Sisters behind. Photo: MARELBU, Wikimedia Commons (CC BY 3.0)."
+    'Bend from Pilot Butte, with Mt. Bachelor and the Three Sisters behind. Photo: MARELBU, <a href="https://commons.wikimedia.org/wiki/File:Bend,_Oregon_USA_-_View_from_Pilot_Butte_-_panoramio_(3).jpg" target="_blank" rel="noopener">Wikimedia Commons</a>, <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a>.'
   ),
   chips: [
     { label: "$408M Visitor Spending (2025)" },
