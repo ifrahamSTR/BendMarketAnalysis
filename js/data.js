@@ -35,7 +35,7 @@ const HERO = {
 
 const FOOTER_NOTE = () =>
   "Preliminary. No property has been underwritten and no buy box has been set. Revenue figures are gross Revenue Potential benchmarks from the market dataset (" +
-  MARKET_STATS.n + " listings, " + MARKET_STATS.snapshot + " snapshot), not a full underwriting model.";
+  MARKET_STATS.n + " listings, <span class=\"nowrap\">" + MARKET_STATS.snapshot + "</span> snapshot), not a full underwriting model.";
 
 // ---------------------------------------------------------------------------
 // Section 2 — Market context
@@ -107,7 +107,7 @@ const SIZE_GUIDE = {
     head: "Close in. The Westside is the deepest pool.",
     look: "Walkable, or within 2 km. The Westside is the strongest area for this size.",
     avoid: "Edge-of-town 2BRs and Northeast Bend.",
-    proof: () => "Walkable " + fmtK(_ls("2BR", WALK).median) + " · 1–2 km " + fmtK(_ls("2BR", "1–2 km").median) + " · 4 km+ " + fmtK(_ls("2BR", "4 km+").median) + " (" + _x(_ls("2BR", "4 km+")) + ")",
+    proof: () => "Walkable " + fmtK(_ls("2BR", WALK).median) + " · 1–2&nbsp;km&nbsp;" + fmtK(_ls("2BR", "1–2 km").median) + " · 4&nbsp;km+&nbsp;" + fmtK(_ls("2BR", "4 km+").median) + " (" + _x(_ls("2BR", "4 km+")) + ")",
   },
   "3BR": {
     head: "Walkable pays most; the Westside is the safe middle.",
@@ -115,7 +115,7 @@ const SIZE_GUIDE = {
     avoid: "Southwest Bend and the edge of town.",
     proof: () => {
       const w = areaCellOf("Westside", "3BR");
-      return "Walkable " + fmtK(_ls("3BR", WALK).median) + " (" + _x(_ls("3BR", WALK)) + ") · Westside " + fmtK(w.median) + " · 4 km+ " + fmtK(_ls("3BR", "4 km+").median) + " (" + _x(_ls("3BR", "4 km+")) + ")";
+      return "Walkable " + fmtK(_ls("3BR", WALK).median) + " (" + _x(_ls("3BR", WALK)) + ") · Westside " + fmtK(w.median) + " · 4&nbsp;km+&nbsp;" + fmtK(_ls("3BR", "4 km+").median) + " (" + _x(_ls("3BR", "4 km+")) + ")";
     },
   },
   "4BR+": {
@@ -124,7 +124,7 @@ const SIZE_GUIDE = {
     avoid: "The 2–4 km residential middle, where large homes earn below typical and fill fewer nights.",
     proof: () => {
       const w = _ls("4BR+", WALK), m = _ls("4BR+", "2–4 km"), f = _ls("4BR+", "4 km+");
-      return "Walkable " + fmtK(w.median) + " (" + w.n + " homes) · 4 km+ " + fmtK(f.median) + " · 2–4 km " + fmtK(m.median) + " at " + m.occ + "% occupancy";
+      return "Walkable " + fmtK(w.median) + " (" + w.n + " homes) · 4&nbsp;km+&nbsp;" + fmtK(f.median) + " · 2–4&nbsp;km&nbsp;" + fmtK(m.median) + " at " + m.occ + "% occupancy";
     },
   },
 };
@@ -133,11 +133,10 @@ const SIZE_GUIDE = {
 // Section 5 — Demographics
 // ---------------------------------------------------------------------------
 const DEMOGRAPHICS_NOTE = () => {
-  const b = DEMOGRAPHICS.byBedroom, s = b.find((r) => r.label === "Studio-1BR"), big = b.find((r) => r.label === "6BR+");
-  const edge = DEMOGRAPHICS.byLoc.find((r) => r.label === "4 km+"), walk = DEMOGRAPHICS.byLoc.find((r) => r.label === WALK);
-  return "These are review-derived signals, not verified demographics. Bend is an adult market: kids appear in only " + Math.round(DEMOGRAPHICS.marketWide.kids) + "% of reviews, and " +
-    Math.round(DEMOGRAPHICS.marketWide.other) + "% are \"Other\" trips (couples, friends, solo). Group trips climb with size, from almost none at studio–1BR (" + s.group + "%) to " + Math.round(big.group) + "% at 6BR+. " +
-    "Pets show up across the market (" + Math.round(DEMOGRAPHICS.marketWide.pet) + "%). The walkable core is the most couple-heavy (" + Math.round(walk.other) + "% \"Other\"), and the edge of town the most group-heavy (" + Math.round(edge.group) + "% group trips).";
+  const b = DEMOGRAPHICS.byBedroom, s = b.find((r) => r.label === "Studio-1BR"), big = b.find((r) => r.label === "4BR+");
+  return "These are review-derived signals, not verified demographics. Bend is an adult market: on the average listing, only " + Math.round(DEMOGRAPHICS.marketWide.kids) + "% of reviews come from stays with kids, and " +
+    Math.round(DEMOGRAPHICS.marketWide.other) + "% are \"Other\" trips (couples, friends, solo). Group trips climb with size, from almost none at studio–1BR (" + s.group + "%) to " + Math.round(big.group) + "% at 4BR+. " +
+    "Pets show up across the market (" + Math.round(DEMOGRAPHICS.marketWide.pet) + "%).";
 };
 
 // ---------------------------------------------------------------------------
@@ -239,14 +238,14 @@ function DEST_AREAS() {
     },
     {
       id: "east", name: "East side (Pilot Butte, Orchard, Larkspur)", kind: "east", tags: ["Context"],
-      zones: [{ lat: 44.0635, lng: -121.2785, r: 1700, tip: "East side", dir: "right" }],
+      zones: [{ lat: 44.0635, lng: -121.2785, r: 1700, tip: "East side", tipShort: "East", dir: "right" }],
       why: "Mostly residential neighbourhoods with quick US-97 access to Redmond Airport and Smith Rock, near St. Charles hospital.",
       season: "Year-round, and less tied to downtown events and the river.",
       matters: "Earns below typical for its size (Northeast " + fmtX(ne.idx) + ", Larkspur " + fmtX(lk.idx) + "), with small homes lagging most. Large homes are the exception (Northeast 4BR+ " + fmtK(ne4.median) + ", " + ne4.n + " homes).",
     },
     {
       id: "south", name: "Southwest & Deschutes River Woods", kind: "south", tags: ["Large homes only"],
-      zones: [{ lat: 44.024, lng: -121.341, r: 1100, tip: "Southwest Bend", dir: "left" }, { lat: 43.99, lng: -121.364, r: 1500, tip: "Deschutes River Woods", dir: "bottom" }],
+      zones: [{ lat: 44.024, lng: -121.341, r: 1100, tip: "Southwest Bend", dir: "left" }, { lat: 43.99, lng: -121.364, r: 1500, tip: "Deschutes River Woods", tipShort: "River Woods", dir: "bottom" }],
       why: "Quiet pines and river access on the way to Sunriver, with a quick run to Century Drive.",
       season: "Summer river and nature trips plus winter ski. Deschutes River Woods draws the highest share of group trips in the market.",
       matters: "Southwest Bend earns the least for its size of any area (" + fmtX(sw.idx) + "). Large homes on bigger lots in Deschutes River Woods come close to typical (4BR+ " + fmtK(drw4.median) + ", " + fmtX(drw4.idx) + "); it sits outside city limits, under county STR rules.",
