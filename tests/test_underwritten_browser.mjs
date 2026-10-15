@@ -126,6 +126,23 @@ check(am === 381, "Match by amenities ranks all 381 homes");
 await ev(() => { UW.ui.n = 12; UW.setMode("location"); });
 await page.waitForTimeout(300);
 
+console.log("\n3b. VIEW CONTROL (declutter)\n");
+await page.click(".uw-viewctl [data-view=clean]");
+await page.waitForTimeout(300);
+const vc = await ev(() => ({ score: UW.ui.score, L: UW.ui.layers, saved: JSON.parse(localStorage.getItem("bendUW.view") || "null"), outlines: document.querySelectorAll(".uw-area-label").length }));
+check(vc.score === "hideLow" && !vc.L.areas && !vc.L.labels && !vc.L.village && !vc.L.ghosts && !vc.L.ring && vc.L.ranks && vc.saved && vc.saved.score === "hideLow",
+  "Clean map: bottom 25% and filtered-out dots hidden, outlines / names / rings / search ring off, rank numbers kept, remembered");
+await page.click('.uw-viewctl [data-view=score][data-v=top]');
+await page.waitForTimeout(300);
+const vis = await ev(() => { const ranked = new Set(UW.mapApi.lastNearest.map((x) => x.l.id)); let lowShown = 0, rankedHidden = 0;
+  UW.mapApi.map.eachLayer((m) => { if (!m.listing) return; const on = m.options.fillOpacity > 0; if (on && m.listing.sizeTier !== "Top 25% for its size" && !ranked.has(m.listing.id)) lowShown++; if (!on && ranked.has(m.listing.id)) rankedHidden++; });
+  return { lowShown, rankedHidden, ranked: ranked.size, badges: document.querySelectorAll(".uw-rank").length }; });
+check(vis.lowShown === 0 && vis.rankedHidden === 0 && vis.badges === vis.ranked, "Top 25% only: no other dot drawn, all " + vis.ranked + " ranked matches still shown with their numbers");
+await page.click(".uw-viewctl [data-view=all]");
+await page.waitForTimeout(300);
+const va = await ev(() => UW.ui.score === "all" && ["areas", "labels", "village", "ghosts", "ranks", "ring"].every((k) => UW.ui.layers[k]));
+check(va, "Show everything restores every dot and marking");
+
 console.log("\n4. COPY, ADD, DOWNLOAD\n");
 const first = loc[0].id;
 await ev((id) => UW.mapApi.openListing(id), first);

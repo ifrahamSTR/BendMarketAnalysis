@@ -20,7 +20,7 @@
 /* global UWMath, UWGeo, UWCsv, UWRules */
 (function () {
   const UW = (window.UW = {});
-  UW.VERSION = "20261015-bd1";
+  UW.VERSION = "20261015-bd2";
   const LS_KEY = "bendUW.v1";
 
   // ---------------------------------------------------------------------------
@@ -206,7 +206,7 @@
   // Property models
   // ---------------------------------------------------------------------------
   UW.ui = { selected: null, versions: {}, expanded: new Set(), colorBy: "revenue", n: 12, radius: null, sort: "distance",
-    layers: { areas: true, labels: true, village: true, ghosts: true, uw: true, newl: true }, listSort: { key: "area", dir: 1 },
+    layers: { areas: true, labels: true, village: true, ghosts: true, uw: true, newl: true, ranks: true, ring: true }, score: "all", listSort: { key: "area", dir: 1 },
     pure: false, compsView: "nearest", picked: new Set(), cmatch: {},
     // Two separate ways to find comps; each keeps its own extra filters and rules.
     mode: "location",

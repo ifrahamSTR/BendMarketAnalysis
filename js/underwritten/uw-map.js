@@ -12,7 +12,7 @@
 /* global L, UWGeo */
 (function () {
   const UW = window.UW;
-  let map, renderer, dots = [], areaLayer, labelLayer, villageLayer, propLayer, badgeLayer, ringLayer, placing = null, legendCtl;
+  let map, renderer, dots = [], areaLayer, labelLayer, villageLayer, propLayer, badgeLayer, ringLayer, placing = null, legendCtl, viewCtl, viewOpen = true, hiddenN = 0;
   const M = (UW.mapApi = {});
 
   UW.colorOf = function (l) {
@@ -64,6 +64,10 @@
     legendCtl = L.control({ position: "bottomleft" });
     legendCtl.onAdd = () => { const d = L.DomUtil.create("div", "uw-legend"); L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d); return d; };
     legendCtl.addTo(map);
+    viewCtl = L.control({ position: "topright" });
+    viewCtl.onAdd = () => { const d = L.DomUtil.create("div", "uw-viewctl"); L.DomEvent.disableClickPropagation(d); L.DomEvent.disableScrollPropagation(d); d.addEventListener("click", onViewClick); return d; };
+    viewCtl.addTo(map);
+    viewOpen = map.getContainer().clientWidth >= 700;  // open on desktop, folded on phones
 
     map.on("popupopen", () => { const d = legendCtl.getContainer().querySelector("details"); if (d) d.open = false; });
     map.getContainer().addEventListener("click", onMapClick);
@@ -101,27 +105,31 @@
     // Ring: how well an amenity match fits. Bedrooms, sleeps or pool off the profile -> grey, whatever its amenities.
     near.forEach((x) => { x.l._amFrac = x.bedsTier || x.sleepsTier || x.poolOk === false ? -1 : x.info && x.info.prefTotal ? x.info.prefMatched / x.info.prefTotal : 1; });
     const inSet = new Set(p ? UW.activeVersion(p).comps.map((c) => UW.compId(c)).filter(Boolean) : []);
-    const front = [];
+    const front = [], keep = SCORE[UW.ui.score] || SCORE.all;
+    hiddenN = 0;
     dots.forEach((m) => {
       const l = m.listing, match = UW.matchSet.has(l.id);
       let state = !match ? "ghost" : p ? "dim" : "match";
       if (hl.has(l.id)) state = amMode ? "am" : "hl";
       else if (inSet.has(l.id)) state = "set";
-      m.setStyle(styleFor(l, state));
-      m.options.interactive = !placing && (state !== "ghost" || inSet.has(l.id));  // while placing a pin every click places it
+      // The View control hides background dots only: ranked matches and the comp set always stay.
+      const hide = (state === "ghost" && !UW.ui.layers.ghosts) || ((state === "match" || state === "dim" || state === "ghost") && !keep(l));
+      if (hide) hiddenN++;
+      m.setStyle(hide ? { radius: 0, fillOpacity: 0, opacity: 0, weight: 0 } : styleFor(l, state));
+      m.options.interactive = !placing && !hide && (state !== "ghost" || inSet.has(l.id));  // while placing a pin every click places it
       if (state === "hl" || state === "am" || state === "set") front.push(m);
     });
     front.forEach((m) => m.bringToFront());
 
     badgeLayer.clearLayers();
     ringLayer.clearLayers();
-    near.slice(0, 50).forEach((x) => {
+    if (UW.ui.layers.ranks) near.slice(0, 50).forEach((x) => {
       const b = L.marker([x.l.lat, x.l.lng], { keyboard: false, zIndexOffset: 500, title: "#" + x.rank + " " + x.l.title,
         icon: L.divIcon({ className: "uw-rank" + (amMode ? " uw-rank--am" : "") + (inSet.has(x.l.id) ? " uw-rank--set" : ""), iconSize: [20, 20], iconAnchor: [-3, 22], html: String(x.rank) }) });
       b.on("click", () => openListing(x.l.id));
       b.addTo(badgeLayer);
     });
-    if (p && p.geo && near.length && !amMode) {
+    if (p && p.geo && near.length && !amMode && UW.ui.layers.ring) {
       const r = UW.ui.radius != null ? UW.ui.radius : near[near.length - 1].d * 1.03;
       // Same canvas as the dots: a second canvas on top would swallow their clicks.
       L.circle([p.geo.lat, p.geo.lng], { renderer, radius: r * 1609.344, color: "#0b4b40", weight: 1.2, dashArray: "4 5", fill: true, fillColor: "#0b4b40", fillOpacity: 0.035, interactive: false })
@@ -129,7 +137,60 @@
     }
     drawProperties(p);
     drawLegend();
+    drawView();
   };
+
+  // ---------------------------------------------------------------------------
+  // View control (top right): declutter the map. Display only: filters, rankings and
+  // copies don't change, and ranked matches and the comp set always stay visible.
+  // Remembered in this browser (localStorage, wrapped in try/catch).
+  // ---------------------------------------------------------------------------
+  const VIEW_KEY = "bendUW.view";
+  const VIEW_KEYS = ["ghosts", "areas", "labels", "village", "ranks", "ring"];
+  const SCORE = {
+    all: () => true,
+    hideLow: (l) => l.sizeTier !== "Bottom 25% for its size",
+    top: (l) => l.sizeTier === "Top 25% for its size",
+  };
+  const VIEW_ALL = { score: "all", ghosts: true, areas: true, labels: true, village: true, ranks: true, ring: true };
+  const VIEW_CLEAN = { score: "hideLow", ghosts: false, areas: false, labels: false, village: false, ranks: true, ring: false };
+  function applyView(v) {
+    if (v.score && SCORE[v.score]) UW.ui.score = v.score;
+    VIEW_KEYS.forEach((k) => { if (typeof v[k] === "boolean") UW.ui.layers[k] = v[k]; });
+  }
+  function saveView() {
+    const v = { score: UW.ui.score };
+    VIEW_KEYS.forEach((k) => (v[k] = !!UW.ui.layers[k]));
+    try { localStorage.setItem(VIEW_KEY, JSON.stringify(v)); } catch (e) { /* storage blocked: this session only */ }
+  }
+  M.loadView = function () { try { const v = JSON.parse(localStorage.getItem(VIEW_KEY) || "null"); if (v) applyView(v); } catch (e) { /* use the defaults */ } };
+  M.setView = function (v) { applyView(v); saveView(); M.layers(); if (UW.panelApi && UW.panelApi.renderAll) UW.panelApi.renderAll(); };
+  function drawView() {
+    const host = viewCtl && viewCtl.getContainer();
+    if (!host) return;
+    const was = host.querySelector("details");
+    if (was) viewOpen = was.open;
+    const Ly = UW.ui.layers, E = UW.esc;
+    const seg = [["all", "All"], ["hideLow", "Hide bottom 25%"], ["top", "Top 25% only"]].map(([k, t]) =>
+      '<button type="button" data-view="score" data-v="' + k + '" aria-pressed="' + (UW.ui.score === k) + '">' + t + "</button>").join("");
+    const chip = (k, t) => '<button type="button" class="uw-chip" data-view="toggle" data-k="' + k + '" aria-pressed="' + !!Ly[k] + '">' + E(t) + "</button>";
+    host.innerHTML = '<details class="uw-viewctl__box"' + (viewOpen ? " open" : "") + '><summary>View' + (hiddenN ? ' <span class="uw-viewctl__n">' + hiddenN + " dots hidden</span>" : "") + "</summary>" +
+      '<p class="uw-viewctl__t">Airbnb comps on the map</p><div class="uw-seg uw-seg--sm uw-viewctl__seg" role="group" aria-label="Which comps to show">' + seg + "</div>" +
+      '<p class="uw-viewctl__hint">Against same-size homes. Ranked matches and the comp set always show.</p>' +
+      '<p class="uw-viewctl__t">Markings</p><div class="uw-viewctl__chips">' + chip("ghosts", "Filtered-out dots") + chip("areas", "Area outlines") + chip("labels", "Area names") +
+      chip("village", "Distance rings") + chip("ranks", "Rank numbers") + chip("ring", "Search ring") + "</div>" +
+      '<div class="uw-viewctl__acts"><button type="button" class="uw-btn uw-btn--small uw-btn--primary" data-view="clean">Clean map</button>' +
+      '<button type="button" class="uw-btn uw-btn--small uw-btn--ghost" data-view="all">Show everything</button></div></details>';
+  }
+  function onViewClick(e) {
+    const b = e.target.closest("[data-view]");
+    if (!b) return;
+    const act = b.dataset.view;
+    if (act === "score") M.setView({ score: b.dataset.v });
+    else if (act === "toggle") M.setView({ [b.dataset.k]: !UW.ui.layers[b.dataset.k] });
+    else if (act === "clean") M.setView(VIEW_CLEAN);
+    else if (act === "all") M.setView(VIEW_ALL);
+  }
 
   function houseIcon(color, selected, edited) {
     const s = selected ? 40 : 30;
@@ -254,7 +315,7 @@
 
   M.layers = function () {
     const Ly = UW.ui.layers;
-    [[areaLayer, Ly.areas], [labelLayer, Ly.areas && Ly.labels], [villageLayer, Ly.village]].forEach(([layer, on]) => {
+    [[areaLayer, Ly.areas], [labelLayer, Ly.labels], [villageLayer, Ly.village]].forEach(([layer, on]) => {
       if (on && !map.hasLayer(layer)) layer.addTo(map);
       if (!on && map.hasLayer(layer)) map.removeLayer(layer);
     });

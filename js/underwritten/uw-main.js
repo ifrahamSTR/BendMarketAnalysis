@@ -47,6 +47,7 @@
     UW.refilter();
     document.getElementById("uw-boot").remove();
 
+    UW.mapApi.loadView();  // the reader's saved View settings (declutter toggles)
     UW.mapApi.init();
     UW.panelApi.init();
     UW.cardsApi.init();

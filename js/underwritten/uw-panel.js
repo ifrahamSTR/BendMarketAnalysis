@@ -316,7 +316,8 @@
       radio("area", "Area", "The seven reference areas on the main page") +
       radio("loc", "Distance to downtown / Old Mill", "Walkable (under 1 km), 1–2 km, 2–4 km, 4 km+") + "</fieldset>" +
       '<fieldset class="uw-fs"><legend>Show</legend>' + tog("uw", "Acquisition targets: underwritten") + tog("newl", "Acquisition targets: new listings") + tog("areas", "Area outlines") + tog("labels", "Area names") +
-      tog("village", "1 km rings round downtown and the Old Mill (the walkable band)") + tog("ghosts", "Filtered-out comps, as faint grey dots") + "</fieldset>" +
+      tog("village", "1 km rings round downtown and the Old Mill (the walkable band)") + tog("ghosts", "Filtered-out comps, as faint grey dots") + tog("ranks", "Rank numbers on the matches") + tog("ring", "Search ring round the target") + "</fieldset>" +
+      '<p class="uw-fnote">Quicker: the map’s <strong>View</strong> box (top right) also hides the bottom 25% of homes for their size, or shows only the top 25%, and has a one-click <strong>Clean map</strong>.</p>' +
       '<p class="uw-fnote">' + UW.listings.length + " Airbnb entire homes from " + E(UW.data.comps.source.split(",")[0]) + " (Cleaned_Data), snapshot " + E(UW.data.comps.snapshot) +
       ". Airbnb pins are approximate, and whole complexes can share one pin.</p>");
   }
@@ -391,7 +392,12 @@
       renderComps();
       return;
     }
-    if (t.dataset.layer) { UW.ui.layers[t.dataset.layer] = t.checked; UW.mapApi.layers(); return; }
+    if (t.dataset.layer) {
+      // The declutter toggles are shared with the map's View control (and remembered); the target layers aren't.
+      if (["ghosts", "areas", "labels", "village", "ranks", "ring"].includes(t.dataset.layer)) UW.mapApi.setView({ [t.dataset.layer]: t.checked });
+      else { UW.ui.layers[t.dataset.layer] = t.checked; UW.mapApi.layers(); }
+      return;
+    }
     if (t.dataset.rule) { UW.ui.locRules[t.dataset.rule] = t.checked; UW.emit("near"); return; }
     const k = t.dataset.k;
     if (!k) return;

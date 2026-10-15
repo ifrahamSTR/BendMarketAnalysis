@@ -673,3 +673,19 @@ td.sh-in.sh-block { vertical-align: top !important; }
 /* A card never grows past its column: the tab bar and the sheet scroll inside it. */
 .uw-card, .uw-card__body, .uw-cardbar, .uw-pane { min-width: 0; }
 .uw-cardbar > * { max-width: 100%; min-width: 0; }
+
+/* View control (top right of the map): declutter toggles */
+.uw-viewctl { font: 12px/1.35 Inter, system-ui, sans-serif; color: #1f2a30; }
+.uw-viewctl__box { background: #fff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, .18); padding: 7px 10px; max-width: 250px; }
+.uw-viewctl__box[open] { padding-bottom: 10px; }
+.uw-viewctl__box summary { cursor: pointer; font-weight: 700; color: #0b4b40; list-style-position: inside; }
+.uw-viewctl__n { font-weight: 500; color: #6b7780; margin-left: 4px; }
+.uw-viewctl__t { margin: 8px 0 4px; font-weight: 700; font-size: 11px; letter-spacing: .03em; text-transform: uppercase; color: #6b7780; }
+.uw-viewctl__seg { display: flex; flex-wrap: wrap; }
+.uw-viewctl__seg button { flex: 1 1 auto; }
+.uw-viewctl__hint { margin: 4px 0 0; color: #6b7780; font-size: 11px; }
+.uw-viewctl__chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.uw-viewctl__chips .uw-chip { font-size: 11.5px; padding: 3px 8px; }
+.uw-viewctl__chips .uw-chip[aria-pressed="false"] { text-decoration: line-through; opacity: .7; }
+.uw-viewctl__acts { display: flex; gap: 6px; margin-top: 9px; }
+@media (max-width: 600px) { .uw-viewctl__box { max-width: 210px; } }

@@ -57,4 +57,7 @@ This is the same Underwritten Properties page as the Galveston, Island Park and 
   - Run `python scripts/build_underwritten.py`. It uses the `str` venv and `../notebooks/market_common.py`, whose `TOWNS`, `LOC_BREAKS_KM`, `LOC_COLORS` and `town_km` were added for this page. It writes `data/*.json` and runs `node tests/test_underwritten.mjs`.
   - Browser test: `NODE_PATH=<playwright-core node_modules> node tests/test_underwritten_browser.mjs`.
   - Drop "UW'ing - NN.csv" exports into `underwriting/source_csv/` and rebuild to add underwritten targets.
-
+- **View control (top right of the map, 2026-10-15):** declutters the map. It changes only what's drawn: filters, rankings and copies stay the same, and ranked matches and the comp set always show. The choice is remembered in the browser (`bendUW.view` in localStorage).
+  - Airbnb comps: All / Hide bottom 25% / Top 25% only, against same-size homes.
+  - Toggles: filtered-out dots, area outlines, area names, distance rings, rank numbers, search ring.
+  - One-click **Clean map** and **Show everything**.
