@@ -1,0 +1,1 @@
+{"source":"Town and resort centres (OpenStreetMap); straight-line (haversine) km to the nearest, as market_common.load()","centers":[{"name":"Downtown (Wall St)","lat":44.0583,"lng":-121.3135},{"name":"Old Mill District","lat":44.047,"lng":-121.3145}],"breaksKm":[1,2,4],"locOrder":["Walkable (<1 km)","1–2 km","2–4 km","4 km+"]}

@@ -42,3 +42,19 @@ Static site (no build step), same template as the Park City and Charlotte market
   - They compare the share reaching the top quarter for their size, with vs. without a feature.
   - Features with fewer than 10 listings on either side are dropped.
 - **Presentation rules:** plain English, no statistical notation on the page, and conclusions → evidence → what to look for.
+
+## Underwriting (`underwritten.html`, added 2026-10-15)
+
+This is the same Underwritten Properties page as the Galveston, Island Park and Bozeman sites. The main page has an Underwriting section under the hero, which links to it. There are no Bend UW sheets yet, so the page starts empty. **+ Add listing** puts a Zillow listing on the map so you can rank its comps, build a comp set and download a UW CSV.
+
+- **Comps:** the 381 entire homes in `Cleaned_Data`. The main page's analysis keeps all 409 rows, but its 26 private, 1 hotel and 1 shared room are left out here. Areas, distance bands and tiers are the main page's.
+- **Location:** the same rule as the main page, straight-line km to the nearer of downtown (Wall St) and the Old Mill District, banded under 1 / 1–2 / 2–4 / 4+ km. A new target takes its area from the nearest listing; this gives every listing its own area in a leave-one-out test. Match by location keeps to the target's area, with bedrooms ±1, revenue $90k+ (56 homes) and nearest first.
+- **New sheets start from `underwriting/template/UW'ing - template (from Island Park 112).csv`:**
+  - only the team's financing and tax assumptions carry over;
+  - every sheet carries the five standard setup lines and all fifteen OPEX lines, at Galveston file 101's amounts (OPEX rounded, $4,850 a month);
+  - revenue cases and comps start empty.
+- **Pipeline:**
+  - Run `python scripts/build_underwritten.py`. It uses the `str` venv and `../notebooks/market_common.py`, whose `TOWNS`, `LOC_BREAKS_KM`, `LOC_COLORS` and `town_km` were added for this page. It writes `data/*.json` and runs `node tests/test_underwritten.mjs`.
+  - Browser test: `NODE_PATH=<playwright-core node_modules> node tests/test_underwritten_browser.mjs`.
+  - Drop "UW'ing - NN.csv" exports into `underwriting/source_csv/` and rebuild to add underwritten targets.
+
